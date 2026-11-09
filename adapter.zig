@@ -1,4 +1,4 @@
-//! INI (D106): one adapter per `Dialect`, each reading and writing files the way it says.
+//! INI: one adapter per `Dialect`, each reading and writing files the way it says.
 //! INI has no lists, so a list is refused; a table is a `[section]`, written by `generate`.
 
 const std = @import("std");
@@ -6,9 +6,9 @@ const kosm = @import("kosm");
 const Dialect = @import("Dialect.zig");
 const Parser = @import("Parser.zig");
 
-/// The adapter for `options`: enables `edit`, `generate` and `block` (D71) for its files.
+/// The adapter for `options`: enables `edit`, `generate` and `block` for its files.
 pub fn dialect(comptime options: Dialect) kosm.Adapter {
-    if (options.comments.len == 0) @compileError("an INI dialect needs at least one comment prefix, for block markers (D72)");
+    if (options.comments.len == 0) @compileError("an INI dialect needs at least one comment prefix, for block markers");
     const Capabilities = struct {
         const chosen = options;
 
@@ -35,7 +35,7 @@ pub fn dialect(comptime options: Dialect) kosm.Adapter {
     };
 }
 
-/// Longest text value (a joined value, D89) kosm renders before checking it.
+/// Longest text value (a joined value) kosm renders before checking it.
 const max_text_length = 64 * 1024;
 
 /// Deepest `[A][B]...` header `serialize` writes.
@@ -111,7 +111,7 @@ fn writeKey(writer: *std.Io.Writer, key: []const u8, context: *kosm.Adapter.Cont
     try writer.writeAll(key);
 }
 
-/// Writes one value; with `parser`, enables `edit` (D42).
+/// Writes one value; with `parser`, enables `edit`.
 fn formatValue(writer: *std.Io.Writer, value: kosm.Value, context: *kosm.Adapter.Context, options: *const Dialect) kosm.Adapter.Error!void {
     switch (value) {
         .raw => |text| try writer.writeAll(text),
@@ -128,12 +128,12 @@ fn formatValue(writer: *std.Io.Writer, value: kosm.Value, context: *kosm.Adapter
             };
             try writeText(writer, rendered.buffered(), context, options);
         },
-        .list => return context.unsupported("INI has no lists; build the program's own spelling as a joined value (D89)", .{}),
+        .list => return context.unsupported("INI has no lists; build the program's own spelling as a joined value", .{}),
         .table => return context.unsupported("a table is a [section], which only generate and blocks write", .{}),
     }
 }
 
-/// A value's text: parts of a joined value are written back to back (D89).
+/// A value's text: parts of a joined value are written back to back.
 fn writePlain(writer: *std.Io.Writer, value: kosm.Value, context: *kosm.Adapter.Context) kosm.Adapter.Error!void {
     switch (value) {
         .string, .raw => |text| try writer.writeAll(text),
@@ -146,7 +146,7 @@ fn writePlain(writer: *std.Io.Writer, value: kosm.Value, context: *kosm.Adapter.
     }
 }
 
-/// Text bare or quoted, as the dialect says; text that would read back differently is refused (G6).
+/// Text bare or quoted, as the dialect says; text that would read back differently is refused.
 fn writeText(writer: *std.Io.Writer, text: []const u8, context: *kosm.Adapter.Context, options: *const Dialect) kosm.Adapter.Error!void {
     if (std.mem.findAny(u8, text, "\r\n") != null) return context.unsupported("\"{s}\" holds a line break, which ends an INI value", .{text});
     switch (options.strings) {
@@ -226,7 +226,7 @@ test "values that would read back differently are refused" {
         .{ plain, .{ .string = "two\nlines" }, "\"two\nlines\" holds a line break, which ends an INI value" },
         .{ plain, .{ .string = " padded" }, "\" padded\" starts or ends with a space, which a bare INI value drops" },
         .{ plain, .{ .string = "\"quoted\"" }, "\"\"quoted\"\" is wrapped in quotes, which ini reads as quoting" },
-        .{ plain, .{ .list = &.{.{ .integer = 1 }} }, "INI has no lists; build the program's own spelling as a joined value (D89)" },
+        .{ plain, .{ .list = &.{.{ .integer = 1 }} }, "INI has no lists; build the program's own spelling as a joined value" },
         .{ plain, .{ .table = &.{} }, "a table is a [section], which only generate and blocks write" },
         .{ quoting, .{ .string = "say \"hi\"" }, "\"say \"hi\"\" holds a quote, which dunst strings can't escape" },
         .{ dialect(.{ .name = "commented", .inline_comments = true }), .{ .string = "a ; b" }, "\"a ; b\" holds a comment prefix after a space, which commented reads as a comment" },

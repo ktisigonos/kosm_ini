@@ -1,8 +1,8 @@
-//! Reads INI into the tree kosm matches paths against (D30, D106), the way a `Dialect` says.
-//! Hand-written (D40): every line is blank, a comment, a `[section]` header or `key = value`,
+//! Reads INI into the tree kosm matches paths against, the way a `Dialect` says.
+//! Hand-written: every line is blank, a comment, a `[section]` header or `key = value`,
 //! and a key belongs to the header above it. The tree is the file's meaning: a section spelled
 //! twice is one table, `[A][B]` is table B inside A, and a key written twice is two entries, so
-//! `set` refuses to pick one (D31).
+//! `set` refuses to pick one.
 
 const Parser = @This();
 
@@ -93,7 +93,7 @@ fn header(parser: *Parser, root: *Draft, line: Line) Error!*Draft {
         const close = std.mem.findScalarPos(u8, text, index + 1, ']') orelse unreachable;
         const name = text[index + 1 .. close];
         if (name.len == 0) return parser.fail(line.start, "a section name is empty", .{});
-        if (isKdeFlag(name, depth)) return parser.fail(line.start, "KDE's [{s}] flag is not supported, so kosm never edits a section KDE may lock (D106)", .{name});
+        if (isKdeFlag(name, depth)) return parser.fail(line.start, "KDE's [{s}] flag is not supported, so kosm never edits a section KDE may lock", .{name});
         table = try parser.section(table, name, line.start + index);
         index = close + 1;
     }
@@ -247,8 +247,8 @@ test "a file the dialect can't read is an error naming the line" {
     try expectFailure("[a]x[b]\n", &default_dialect, "line 1: unexpected text after a ]: expected another [section] or the end of the line");
     try expectFailure("[]\n", &default_dialect, "line 1: a section name is empty");
     try expectFailure("\n = 1\n", &default_dialect, "line 2: a key is empty");
-    try expectFailure("[General][$i]\n", &default_dialect, "line 1: KDE's [$i] flag is not supported, so kosm never edits a section KDE may lock (D106)");
-    try expectFailure("[$i]\n", &default_dialect, "line 1: KDE's [$i] flag is not supported, so kosm never edits a section KDE may lock (D106)");
+    try expectFailure("[General][$i]\n", &default_dialect, "line 1: KDE's [$i] flag is not supported, so kosm never edits a section KDE may lock");
+    try expectFailure("[$i]\n", &default_dialect, "line 1: KDE's [$i] flag is not supported, so kosm never edits a section KDE may lock");
     const sectioned: Dialect = .{ .name = "dunst", .top_level_keys = false };
     try expectFailure("# hi\nfollow = mouse\n", &sectioned, "line 2: a key before the first [section], which dunst files don't allow");
 }

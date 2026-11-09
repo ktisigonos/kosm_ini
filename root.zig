@@ -1,4 +1,4 @@
-//! INI: the `ini` adapter, and `dialect` for programs whose INI differs (D106).
+//! INI: the `ini` adapter, and `dialect` for programs whose INI differs.
 
 const std = @import("std");
 

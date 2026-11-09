@@ -1,21 +1,21 @@
-//! One program's flavour of INI (D106). INI has no standard, so every choice a real config
+//! One program's flavour of INI. INI has no standard, so every choice a real config
 //! needs is a field with a default that fits most files; `kosm_ini.dialect` turns it into an
 //! adapter. How colors, booleans and floats are spelled is not a dialect choice: it is the
-//! file's `kosm.Format` (D70), which the app sets.
+//! file's `kosm.Format`, which the app sets.
 
 const Dialect = @This();
 
 const kosm = @import("kosm");
 
-/// The adapter's name, which apps pass as `.lang` (D26): "ini", "foot".
+/// The adapter's name, which apps pass as `.lang`: "ini", "foot".
 name: []const u8,
 /// File extensions the adapter claims, with the dot. Most INI files have none of their own
 /// (`kdeglobals`, `dunstrc`), so they are picked with `.lang` instead.
 extensions: []const []const u8 = &.{},
-/// How this dialect spells values where neither the app nor the user chose (D70).
+/// How this dialect spells values where neither the app nor the user chose.
 default_format: kosm.Format = .{ .color = .hex, .boolean = .true_false },
 /// Prefixes that start a comment line, after any leading spaces. The first one writes block
-/// markers (D72). Default `#` and `;`.
+/// markers. Default `#` and `;`.
 comments: []const []const u8 = &.{ "#", ";" },
 /// Whether a comment may follow a value on its line (`size = 12 # points`): a comment prefix
 /// after a space then ends the value. Off by default, since values such as `Color=#041C26`
